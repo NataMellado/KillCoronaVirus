@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Rol {
+  id      Int      @id @default(autoincrement())
+  tipoRol String   @map("tipo_rol") @db.VarChar(255)
+  Login   User[]
+  Doctor  Doctor[]
+}
+
+model Doctor {
+  id             Int              @id @default(autoincrement())
+  nombre         String           @db.VarChar(255)
+  apellido       String           @db.VarChar(255)
+  celular        String           @db.VarChar(20)
+  direccion      String           @db.VarChar(255)
+  fechaNac       DateTime         @map("fecha_nac")
+  rolId          Int
+  rut            String           @unique @db.VarChar(20)
+  especialidadId Int
+  Login          User?
+  ConsultaMedica ConsultaMedica[]
+  especialidad   Especialidad     @relation(fields: [especialidadId], references: [id])
+  rol            Rol              @relation(fields: [rolId], references: [id])
+
+  @@map("doctor")
+}
+
+model Paciente {
+  id              Int               @id @default(autoincrement())
+  nombre          String            @db.VarChar(255)
+  apellido        String            @db.VarChar(255)
+  fechaNac        DateTime          @map("fecha_nac")
+  direccion       String            @db.VarChar(255)
+  email           String            @db.VarChar(255)
+  celular         String            @db.VarChar(20)
+  ConsultaMedica  ConsultaMedica[]
+  HistorialMedico HistorialMedico[]
+}
+
+model Especialidad {
+  id     Int      @id @default(autoincrement())
+  nombre String   @db.VarChar(255)
+  Doctor Doctor[]
+}
+
+model HistorialMedico {
+  id                  Int      @id @default(autoincrement())
+  pacienteId          Int
+  fecha               DateTime
+  enfermedadesPrevias String   @map("enfermedades_previas") @db.VarChar(255)
+  cirugias            String   @db.VarChar(255)
+  alergias            String   @db.VarChar(255)
+  observaciones       String   @db.VarChar(255)
+  paciente            Paciente @relation(fields: [pacienteId], references: [id])
+
+  @@map("historial_medico")
+}
+
+model ConsultaMedica {
+  id             Int      @id @default(autoincrement())
+  pacienteId     Int
+  doctorId       Int
+  fecha          DateTime
+  motivoConsulta String   @map("motivo_consulta") @db.VarChar(255)
+  sintomas       String   @db.VarChar(255)
+  diagnostico    String   @db.VarChar(255)
+  recetaMedica   String?  @db.VarChar(255)
+  doctor         Doctor   @relation(fields: [doctorId], references: [id])
+  paciente       Paciente @relation(fields: [pacienteId], references: [id])
+
+  @@map("consulta_medica")
+}
+
+model Examen {
+  id                Int    @id @default(autoincrement())
+  nombre            String @db.VarChar(255)
+  tipo              String @db.VarChar(255)
+  valor             Int    @default(0)
+  duracion          String @db.VarChar(255)
+  preparacionPrevia String @map("preparacion_previa") @db.VarChar(255)
+
+  @@map("examen")
+}
+
+model Insumo {
+  id                 Int      @id @default(autoincrement())
+  nombre             String   @db.VarChar(255)
+  proveedor          String   @db.VarChar(255)
+  valor              Int
+  stock              Int
+  caducidad          DateTime
+  contraindicaciones String   @db.VarChar(255)
+
+  @@map("insumo")
+}
+
+model User {
+  id            String          @id @default(uuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  doctorId      Int?            @unique
+  rolId         Int
+  password      String
+  accounts      Account[]
+  Authenticator Authenticator[]
+  sessions      Session[]
+  doctor        Doctor?         @relation(fields: [doctorId], references: [id])
+  rol           Rol             @relation(fields: [rolId], references: [id])
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, credentialID])
+}
