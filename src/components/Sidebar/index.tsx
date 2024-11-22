@@ -376,7 +376,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           <nav className="mt-1 px-4 lg:px-3">
             {menuGroups.map((group, groupIndex) =>
               //if user is admin only first
-              user?.rolId === 9 && groupIndex === 0 ? (
+              user?.rolId === 1 && groupIndex === 0 ? (
                 <div key={groupIndex}>
                   <h3 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">
                     {group.name}
@@ -393,7 +393,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     ))}
                   </ul>
                 </div>
-              ) : user?.rolId == 10 && groupIndex === 1 ? (
+              ) : user?.rolId == 2 && groupIndex === 1 ? (
                 <div key={groupIndex}>
                   <h3 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">
                     {group.name}
